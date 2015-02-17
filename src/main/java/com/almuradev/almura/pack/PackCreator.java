@@ -64,6 +64,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.malisis.core.renderer.RenderParameters;
@@ -253,6 +254,7 @@ public class PackCreator {
         final RotationNode rotationNode = createRotationNode(pack, name, reader.getNode(PackKeys.NODE_ROTATE.getKey()));
         final LightNode lightNode = createLightNode(pack, name, reader.getNode(PackKeys.NODE_LIGHT.getKey()));
         final RenderNode renderNode = createRenderNode(pack, name, reader.getNode(PackKeys.NODE_RENDER.getKey()));
+        final boolean isStairsLogic = reader.getChild("stairs-logic").getBoolean(false);
         LanguageRegistry.put(Languages.ENGLISH_AMERICAN, "tile." + pack.getName() + "\\" + name + ".name", description.get(0));
 
         final PackBlock
@@ -260,7 +262,7 @@ public class PackCreator {
                 new PackBlock(pack, name, tooltip, textureName, textureCoordinates, modelName, modelContainer, hardness, resistance,
                               showInCreativeTab,
                               creativeTabName,
-                              rotationNode, lightNode, renderNode);
+                              rotationNode, lightNode, renderNode, isStairsLogic);
 
         if (reader.hasChild(PackKeys.NODE_FUEL.getKey())) {
             block.addNode(createFuelNode(pack, name, reader.getNode(PackKeys.NODE_FUEL.getKey())));
@@ -1077,6 +1079,8 @@ public class PackCreator {
             }
             params = combinedParams;
         }
+
+        FMLClientHandler.instance()
 
         return new RecipeContainer<>(pack, name, id, RecipeManager.registerRecipe(pack, name, id, clazz, result, params));
     }
