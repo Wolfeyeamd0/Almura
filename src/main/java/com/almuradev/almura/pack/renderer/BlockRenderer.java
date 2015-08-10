@@ -29,6 +29,7 @@ import net.malisis.core.renderer.icon.ClippedIcon;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.util.IIcon;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public class BlockRenderer extends MalisisRenderer {
 
@@ -87,7 +88,7 @@ public class BlockRenderer extends MalisisRenderer {
 
     @Override
     protected IIcon getIcon(RenderParameters params) {
-        if (params instanceof PackRenderParameters) {
+        if (face.getParameters() instanceof PackRenderParameters) {
             final ClippedIcon[] clippedIcons;
 
             if (world != null) {
@@ -97,10 +98,13 @@ public class BlockRenderer extends MalisisRenderer {
             }
 
             if (!PackUtil.isEmptyClip(clippedIcons)) {
-                if (((PackRenderParameters) params).textureId.get() >= clippedIcons.length) {
+                if (((PackRenderParameters) face.getParameters()).textureId.get() >= clippedIcons.length) {
                     params.icon.set(clippedIcons[0]);
                 } else {
-                    final ClippedIcon toSet = clippedIcons[((PackRenderParameters) params).textureId.get()];
+                    final ClippedIcon toSet = clippedIcons[((PackRenderParameters) face.getParameters()).textureId.get()];
+                    if (((PackRenderParameters) face.getParameters()).mirrorFace.get()) {
+                        toSet.flip(false, false);
+                    }
                     if (toSet == null) {
                         params.icon.set(clippedIcons[0]);
                     } else {
@@ -207,8 +211,8 @@ public class BlockRenderer extends MalisisRenderer {
             model.rotate(property.getAngle(), property.getX().getId(), property.getY().getId(), property.getZ().getId());
         }
 
-        ((Shape) model).applyMatrix();
-        ((Shape) model).deductParameters();
+        //((Shape) model).applyMatrix();
+        //((Shape) model).deductParameters();
     }
 
     private void handleScaling(IModel model) {

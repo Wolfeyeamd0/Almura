@@ -63,6 +63,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.malisis.core.renderer.RenderParameters;
 import net.malisis.core.renderer.element.Face;
 import net.malisis.core.renderer.element.Vertex;
 import net.minecraft.block.Block;
@@ -188,7 +189,7 @@ public class PackCreator {
             return;
         }
 
-        final PackModelContainer.PackShape shape = new PackModelContainer.PackShape(faces);
+        PackModelContainer.PackShape shape = new PackModelContainer.PackShape(faces);
 
         //Handle shapes that don't have at least 4 faces
         if (shape.getFaces().length < 4) {
@@ -200,11 +201,18 @@ public class PackCreator {
 
             int length = shape.getFaces().length;
             for (int i = 0; i < 4 - length; i++) {
-                final Face copyFace = new Face(copy.getFaces()[i >= copy.getFaces().length ? copy.getFaces().length - 1 : i]);
-                shape.addFace(copyFace);
+                final Face toBeCopied = shape.getFaces()[i >= shape.getFaces().length ? shape.getFaces().length - 1 : i];
+                final Face copyFace = new Face(toBeCopied);
+                final PackRenderParameters copyParams = new PackRenderParameters(toBeCopied.getParameters());
+                copyParams.mirrorFace.set(true);
+                copyFace.setStandardUV();
+                copyFace.setParameters(copyParams);
+                copyFace.deductParameters();
+                copy.addFace(copyFace);
             }
 
-            shape.applyMatrix();
+            copy.applyMatrix();
+            shape = copy;
         }
 
         shape.storeState();
