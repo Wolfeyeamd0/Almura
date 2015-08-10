@@ -17,8 +17,6 @@ import com.almuradev.almura.pack.item.PackItem;
 import com.almuradev.almura.pack.mapper.EntityMapper;
 import com.almuradev.almura.pack.mapper.GameObject;
 import com.almuradev.almura.pack.mapper.GameObjectMapper;
-import com.almuradev.almura.pack.model.PackFace;
-import com.almuradev.almura.pack.model.PackMirrorFace;
 import com.almuradev.almura.pack.model.PackModelContainer;
 import com.almuradev.almura.pack.model.PackPhysics;
 import com.almuradev.almura.pack.node.BiomeNode;
@@ -46,6 +44,7 @@ import com.almuradev.almura.pack.node.property.GameObjectProperty;
 import com.almuradev.almura.pack.node.property.RangeProperty;
 import com.almuradev.almura.pack.node.property.RotationProperty;
 import com.almuradev.almura.pack.node.property.VariableGameObjectProperty;
+import com.almuradev.almura.pack.renderer.PackRenderParameters;
 import com.almuradev.almura.recipe.DuplicateRecipeException;
 import com.almuradev.almura.recipe.IRecipe;
 import com.almuradev.almura.recipe.IShapedRecipe;
@@ -64,7 +63,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.malisis.core.renderer.RenderParameters;
+import net.malisis.core.renderer.element.Face;
 import net.malisis.core.renderer.element.Vertex;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
@@ -151,7 +150,7 @@ public class PackCreator {
     public static void loadShapeIntoModelContainer(PackModelContainer modelContainer, String name, ConfigurationNode reader)
             throws IOException {
         final ConfigurationNode modelConfigurationNode = reader.getNode(PackKeys.SHAPES.getKey());
-        final List<PackFace> faces = Lists.newLinkedList();
+        final List<Face> faces = Lists.newLinkedList();
 
         for (ConfigurationNode node : modelConfigurationNode.getChildrenList()) {
             final String rawCoordinateString = node.getNode(PackKeys.TEXTURE_COORDINATES.getKey()).getString("");
@@ -174,12 +173,13 @@ public class PackCreator {
                 //Convert list of coordinates to vertex
                 vertices.add(new Vertex(coordinates.get(0), coordinates.get(1), coordinates.get(2)));
             }
-            final RenderParameters params = new RenderParameters();
+            final PackRenderParameters params = new PackRenderParameters();
+            final Face face = new Face(vertices);
+            params.textureId.set(textureIndex);
             params.textureSide.set(ForgeDirection.getOrientation(textureIndex));
-            final PackFace face = new PackFace(textureIndex, vertices);
             face.setStandardUV();
             face.setParameters(params);
-            //face.deductParameters();
+            face.deductParameters();
             faces.add(face);
         }
 
@@ -200,8 +200,8 @@ public class PackCreator {
 
             int length = shape.getFaces().length;
             for (int i = 0; i < 4 - length; i++) {
-                shape.addFaces(new PackMirrorFace[]{
-                        new PackMirrorFace((PackFace) copy.getFaces()[i >= copy.getFaces().length ? copy.getFaces().length - 1 : i])});
+                final Face copyFace = new Face(copy.getFaces()[i >= copy.getFaces().length ? copy.getFaces().length - 1 : i]);
+                shape.addFace(copyFace);
             }
 
             shape.applyMatrix();

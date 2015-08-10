@@ -13,12 +13,11 @@ import com.almuradev.almura.pack.INodeContainer;
 import com.almuradev.almura.pack.PackUtil;
 import com.almuradev.almura.pack.RotationMeta;
 import com.almuradev.almura.pack.model.IModel;
-import com.almuradev.almura.pack.model.PackFace;
 import com.almuradev.almura.pack.model.PackModelContainer;
+import com.almuradev.almura.pack.node.LightNode;
 import com.almuradev.almura.pack.node.RotationNode;
 import com.almuradev.almura.pack.node.property.RotationProperty;
 import com.google.common.base.Optional;
-
 import net.malisis.core.renderer.MalisisRenderer;
 import net.malisis.core.renderer.RenderParameters;
 import net.malisis.core.renderer.RenderType;
@@ -28,8 +27,6 @@ import net.malisis.core.renderer.element.Vertex;
 import net.malisis.core.renderer.element.shape.Cube;
 import net.malisis.core.renderer.icon.ClippedIcon;
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.item.Item;
 import net.minecraft.util.IIcon;
 
@@ -58,19 +55,20 @@ public class BlockRenderer extends MalisisRenderer {
         shape.resetState();
         enableBlending();
         rp.useBlockBounds.set(false);
-        
+
+        if (block instanceof INodeContainer) {
+            LightNode node = ((INodeContainer) block).getNode(LightNode.class);
+            if (node != null && node.getEmission() > 0) {
+                rp.colorFactor.set(1f);
+            }
+        }
+
         if (shape instanceof IModel) {
             rp.renderAllFaces.set(true);
             rp.flipU.set(true);
             rp.flipV.set(true);
             rp.interpolateUV.set(false);
-        } else {
-            rp.flipU.set(false);
-            rp.flipV.set(false);
-            rp.interpolateUV.set(true);
-        }
 
-        if (shape instanceof IModel) {
             if (renderType == RenderType.ISBRH_WORLD && block instanceof INodeContainer) {
                 handleRotation((IModel) shape);
             }
@@ -78,14 +76,18 @@ public class BlockRenderer extends MalisisRenderer {
             if (renderType == RenderType.ISBRH_INVENTORY) {
                 handleScaling((IModel) shape);
             }
+        } else {
+            rp.flipU.set(false);
+            rp.flipV.set(false);
+            rp.interpolateUV.set(true);
         }
+
         drawShape(shape, rp);
     }
 
     @Override
     protected IIcon getIcon(RenderParameters params) {
-        if (face instanceof PackFace) {
-            final PackFace pface = (PackFace) face;
+        if (params instanceof PackRenderParameters) {
             final ClippedIcon[] clippedIcons;
 
             if (world != null) {
@@ -95,10 +97,10 @@ public class BlockRenderer extends MalisisRenderer {
             }
 
             if (!PackUtil.isEmptyClip(clippedIcons)) {
-                if (pface.getTextureId() >= clippedIcons.length) {
+                if (((PackRenderParameters) params).textureId.get() >= clippedIcons.length) {
                     params.icon.set(clippedIcons[0]);
                 } else {
-                    final ClippedIcon toSet = clippedIcons[pface.getTextureId()];
+                    final ClippedIcon toSet = clippedIcons[((PackRenderParameters) params).textureId.get()];
                     if (toSet == null) {
                         params.icon.set(clippedIcons[0]);
                     } else {
@@ -204,8 +206,9 @@ public class BlockRenderer extends MalisisRenderer {
         } else {
             model.rotate(property.getAngle(), property.getX().getId(), property.getY().getId(), property.getZ().getId());
         }
-       // ((Shape) model).applyMatrix();
-       // ((Shape) model).deductParameters();
+
+        ((Shape) model).applyMatrix();
+        ((Shape) model).deductParameters();
     }
 
     private void handleScaling(IModel model) {

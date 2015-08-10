@@ -8,6 +8,7 @@ package com.almuradev.almura.pack.model;
 import com.google.common.base.Optional;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.malisis.core.renderer.element.Face;
 import net.malisis.core.renderer.element.Shape;
 
 import java.util.List;
@@ -54,29 +55,27 @@ public class PackModelContainer {
 
     @Override
     public String toString() {
-        return "PackModel {identifier= " + identifier + "}";
+        return "PackModel {identifier= " + identifier + ", model= " + model + "}";
     }
 
     @SideOnly(Side.CLIENT)
     public static final class PackShape extends Shape implements IModel {
-
-        public PackShape(PackFace... faces) {
+        public PackShape(Face[] faces) {
             super(faces);
         }
 
-        public PackShape(List<PackFace> faces) {
-            this(faces.toArray(new PackFace[faces.size()]));
+        public PackShape(List<Face> faces) {
+            super(faces);
         }
 
-        public PackShape(PackShape s) {
-            PackFace[] shapeFaces = (PackFace[]) s.getFaces();
-            this.faces = new PackFace[shapeFaces.length];
-            for (int i = 0; i < shapeFaces.length; i++) {
-                faces[i] = new PackFace(shapeFaces[i]);
-            }
-            copyMatrix(s);
+        public PackShape(Shape shape) {
+            super(shape);
+        }
+
+        public PackShape addFace(Face face) {
+            addFaces(new Face[]{face});
+            return this;
         }
     }
-
 
 }

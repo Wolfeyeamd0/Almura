@@ -5,11 +5,14 @@
  */
 package com.almuradev.almura.pack.model;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.malisis.core.renderer.element.Face;
 import net.malisis.core.renderer.element.Vertex;
 
 import java.util.List;
 
+@SideOnly(Side.CLIENT)
 public interface IModel {
 
     Face[] getFaces();
