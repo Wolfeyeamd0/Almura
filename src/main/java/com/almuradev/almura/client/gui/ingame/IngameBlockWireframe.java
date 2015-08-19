@@ -5,6 +5,7 @@
  */
 package com.almuradev.almura.client.gui.ingame;
 
+import com.almuradev.almura.client.DisplayNameManager;
 import com.almuradev.almurasdk.client.gui.SimpleGui;
 import com.almuradev.almurasdk.client.gui.components.UIForm;
 import com.almuradev.almurasdk.util.Colors;
@@ -110,6 +111,7 @@ public class IngameBlockWireframe extends SimpleGui {
                 closeButton, applyButton);
 
         addToScreen(form);
+        DisplayNameManager.getAll();
     }
 
     @Subscribe

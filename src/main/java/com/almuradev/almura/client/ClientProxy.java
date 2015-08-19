@@ -15,7 +15,6 @@ import com.almuradev.almura.client.gui.ingame.IngameOptions;
 import com.almuradev.almura.client.gui.ingame.residence.IngameResidenceHUD;
 import com.almuradev.almura.client.gui.menu.DynamicMainMenu;
 import com.almuradev.almura.client.renderer.accessories.AccessoryManager;
-import com.almuradev.almura.extension.entity.IExtendedEntityLivingBase;
 import com.almuradev.almura.pack.block.PackBlock;
 import com.almuradev.almura.pack.container.PackContainerBlock;
 import com.almuradev.almura.pack.crop.PackCrops;
@@ -24,6 +23,7 @@ import com.almuradev.almura.pack.renderer.ItemRenderer;
 import com.almuradev.almurasdk.lang.LanguageRegistry;
 import com.almuradev.almurasdk.lang.Languages;
 
+import com.google.common.base.Optional;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -33,9 +33,7 @@ import cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiMainMenu;
-import net.minecraft.client.gui.GuiOptions;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.play.client.C01PacketChatMessage;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -119,14 +117,9 @@ public class ClientProxy extends CommonProxy {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onNameFormatEvent(net.minecraftforge.event.entity.player.PlayerEvent.NameFormat event) {
-        // Race condition check
-        if (Minecraft.getMinecraft().theWorld == null) {
-            return;
-        }
-        final EntityPlayer player = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(event.username);
-
-        if (((IExtendedEntityLivingBase) player).getServerName() != null && !((IExtendedEntityLivingBase) player).getServerName().isEmpty()) {
-            event.displayname = ((IExtendedEntityLivingBase) player).getServerName();
+        final Optional<String> displayNameOpt = DisplayNameManager.getDisplayName(event.username);
+        if (displayNameOpt.isPresent()) {
+            event.displayname = displayNameOpt.get();
         }
     }
 
@@ -138,7 +131,6 @@ public class ClientProxy extends CommonProxy {
 
     @SubscribeEvent
     public void onRenderGameOverlayEventPost(RenderGameOverlayEvent.Pre event) {
-
         // Toggle enhanced hud off/on.
         if (Configuration.DISPLAY_ENHANCED_GUI) {
             switch (event.type) {
