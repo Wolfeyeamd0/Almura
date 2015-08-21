@@ -6,19 +6,12 @@
 package com.almuradev.almura.core.mixin.client.renderer.entity;
 
 import com.almuradev.almura.Configuration;
-import com.almuradev.almurasdk.util.Colors;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RendererLivingEntity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.common.MinecraftForge;
-import org.lwjgl.opengl.GL11;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -54,7 +47,7 @@ public abstract class MixinRendererLivingEntity extends Render {
     }
 
     @Inject(method = "passSpecialRender", at = @At(value = "FIELD", opcode = Opcodes.GETSTATIC, target = "NAME_TAG_RANGE:F", shift = At.Shift
-            .BY, ordinal = 0), locals = LocalCapture.PRINT, cancellable = true)
+            .BY, by = 3), locals = LocalCapture.PRINT, cancellable = true)
     public void injectPassSpecialRender2(CallbackInfo ci) {
 
     }
