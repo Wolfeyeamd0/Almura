@@ -23,7 +23,6 @@ apply plugin: "forge"
 apply plugin: "license"
 apply plugin: "maven"
 apply plugin: "signing"
-
 group = 'com.almuradev'
 archivesBaseName = 'almura'
 
@@ -32,13 +31,9 @@ ext.inceptionYear = '2014'
 ext.packaging = 'jar'
 ext.url = 'http://github.com/AlmuraDev'
 ext.organization = 'AlmuraDev'
-ext.mixinSrg = new File(project.buildDir, "tmp/mixins/mixins.almura.srg")
-ext.mixinRefMap = new File(project.buildDir, "tmp/mixins/mixin.refmap.json")
 ext.minecraftVersion = '1.7.10'
 ext.forgeVersion = '10.13.4.1448'
 version = minecraftVersion + '-' + forgeVersion.substring(forgeVersion.size() - 4)
-
-reobf.addExtraSrgFile project.mixinSrg
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
@@ -63,7 +58,7 @@ minecraft {
 }
 
 dependencies {
-    compile ('com.almuradev:almurasdk:1.7.10-1448-1-SNAPSHOT:dev') {
+    compile ('com.almuradev:almurasdk:1.7.10-1448-2-SNAPSHOT:dev') {
         transitive = true
     }
     compile ('com.almuradev:guide:1.7.10-1448-1') {
@@ -90,40 +85,25 @@ compileJava {
     options.compilerArgs += [
             '-Xlint:all',
             '-Xlint:-path',
-            '-Xlint:-processing',
-			"-AoutSrgFile=${project.mixinSrg.getCanonicalPath()}", 
-            "-AoutRefMapFile=${project.mixinRefMap.getCanonicalPath()}" 
+            '-Xlint:-processing'
     ]
     options.deprecation = true
     options.encoding = 'utf8'
 }
 
-afterEvaluate {
-    tasks.compileJava.options.compilerArgs += "-AreobfSrgFile=${tasks.reobf.srg}"
-}
-
-task copySrgs(type: Copy, dependsOn: "genSrgs") {
-    from plugins.getPlugin("forge").delayedFile("{SRG_DIR}")
-
-    include '**/*.srg'
-    into 'build/srgs'
-}
-
-setupDecompWorkspace.dependsOn copySrgs
-setupDevWorkspace.dependsOn copySrgs
-
 def manifestEntries = [
-        "Built-By": System.properties['user.name'],
-        "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
-        "Implementation-Title": name,
-        "Implementation-Version": version,
-        "Implementation-Vendor": url,
-        "FMLCorePluginContainsFMLMod": 'true',
-        "FMLCorePlugin": 'com.almuradev.almura.core.AlmuraCoreMod'
+        "Built-By"                      : System.properties['user.name'],
+        "Created-By"                    : System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+        "Implementation-Title"          : name,
+        "Implementation-Version"        : version,
+        "Implementation-Vendor"         : url,
+        "TweakClass"                    : 'org.spongepowered.asm.launch.MixinTweaker',
+        "TweakOrder"                    : '0',
+        "ForceLoadAsMod"                : 'true',
+        "FMLAT"                         : 'almurasdk_at.cfg'
 ]
 
 jar {
-    from project.mixinRefMap
     manifest.mainAttributes(manifestEntries)
 }
 
